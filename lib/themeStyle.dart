@@ -7,7 +7,7 @@ ThemeData theme = ThemeData(
         elevation: 1, // 그림자
         actionsIconTheme:
         IconThemeData(
-            color: Colors.black
+            color: Colors.red
         ),
         titleTextStyle:
         TextStyle(
