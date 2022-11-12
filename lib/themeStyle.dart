@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 ThemeData theme = ThemeData(
     appBarTheme: const AppBarTheme(
         color: Colors.white,
