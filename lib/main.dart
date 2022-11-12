@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import './themeStyle.dart' as themeStyle;
+import './style.dart' as themeStyle;
 
 void main() {
   runApp(MaterialApp(
