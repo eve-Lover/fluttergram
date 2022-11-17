@@ -19,6 +19,5 @@ ThemeData theme = ThemeData(
         style: ElevatedButton.styleFrom(
             backgroundColor: Colors.white,
         )
-        )
-
+        ),
 );
