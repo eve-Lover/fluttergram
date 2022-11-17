@@ -37,7 +37,6 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         data = json.decode(result.body);
       });
-      print(data);
     } else {
       //실패시 실행할 코드
       throw Exception('실패함ㅅㄱ');
@@ -54,6 +53,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     // MyApp 위젯이 로드될 때 실행됨
     getData(uri);
+
   }
 
   @override
@@ -66,21 +66,22 @@ class _MyAppState extends State<MyApp> {
             IconButton(
               icon: const Icon(Icons.add_box_outlined),
               onPressed: () async {
+               // print(data![3]['image'].runtimeType);
                 ImagePicker picker = ImagePicker();
                 var image = await picker.pickImage(source: ImageSource.gallery);
                 if(image != null){
                     setState((){
-                      userImage = File(image.path); //선택한 이미지 경로를 저장
+                      userImage = File(image.path);//선택한 이미지 경로를 저장
                     });
                 }
                 Navigator.push(context, //context: MaterialApp 들어 있는 context
-                MaterialPageRoute(builder: (context) => Upload(userImage:userImage))
+                MaterialPageRoute(builder: (context) => Upload(userImage:userImage, data: data,))
                 );
               },
             )
           ],
         ),
-        body: [HomeUI(data : data), Text('샵')][tab],
+        body: [HomeUI(data : data, userImage:userImage), Text('샵')][tab],
         bottomNavigationBar: BottomNavigationBar(
           showSelectedLabels: false,
           showUnselectedLabels: false,
@@ -102,18 +103,18 @@ class _MyAppState extends State<MyApp> {
 
 
 class HomeUI extends StatefulWidget {
-  HomeUI({Key? key, required this.data}) : super(key: key);
-  var data;
+  HomeUI({Key? key, required this.data, this.userImage}) : super(key: key);
+  final data;
+  final userImage;
 // StatefulWidget은 부모가 보낸 state 등록은 첫째 class, 사용은 둘째 클래스
   @override
   State<HomeUI> createState() => _HomeUIState();
 }
 
 class _HomeUIState extends State<HomeUI> {
-
+/*
   //유저의 스크롤바 높이 측정하려면? - state 만들어서 Listview에 넣기
   var scroll = ScrollController(); // 유저의 스크롤 관련 정보 저장하는 class
-
   String uri2 = 'https://codingapple1.github.io/app/more1.json';
 
   addData(uri) async{
@@ -127,7 +128,8 @@ class _HomeUIState extends State<HomeUI> {
       throw Exception('실패함ㅅㄱ');
       //  }
     }
-  }
+  }*/
+/*
 
   @override
   void initState() {
@@ -139,22 +141,29 @@ class _HomeUIState extends State<HomeUI> {
       if(scroll.position.pixels == scroll.position.maxScrollExtent){
         //유저가 맨 밑까지 스크롤 했는지 감시
         addData(uri2);
-
       }
     });
   }
+*/
   @override
   Widget build(BuildContext context) {
     if (widget.data.isNotEmpty){
       print(widget.data);
       return ListView.builder(
-        controller: scroll,
+       // controller: scroll,
         itemCount: widget.data.length,
         itemBuilder: (c,i){
+          var img;
+          if(widget.data[i]['image'].runtimeType == String){
+            img = Image.network(widget.data[i]['image']);
+          }else{
+            img = Image.file(widget.data[i]['image'], width: 500, height: 500);
+          }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.network(widget.data[i]['image']),
+              img,
+              //Image.network(widget.data[i]['image']),
               Text(widget.data[i]['id'].toString()),
               Text(widget.data[i]['likes'].toString()),
               Text(widget.data[i]['date']),
@@ -170,24 +179,66 @@ class _HomeUIState extends State<HomeUI> {
   }
 }
 
-class Upload extends StatelessWidget {
-  const Upload({Key? key, this.userImage}) : super(key: key);
+class Upload extends StatefulWidget {
+  const Upload({Key? key, this.userImage, this.data}) : super(key: key);
   @override
+  final data;
   final userImage;
+
+  @override
+  State<Upload> createState() => _UploadState();
+}
+
+class _UploadState extends State<Upload> {
+  String inputText = '';
+
+  _addData() {
+    var userData = {
+      "id" : 0,
+      "image" : widget.userImage,
+      "likes" : 0,
+      "date" : "Nov 18",
+      "content" : inputText,
+      "liked" : false,
+      "user" : "nayoung"
+    };
+    setState(() {
+      widget.data.add(userData);
+      print(widget.data);
+    });
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(),
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          actions: [
+            IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: (){
+                  Navigator.pop(context);
+                },
+            ),
+          ],
+        ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('이미지업로드화면'),
-            Image.file(userImage),
-            IconButton(
+            TextField(
+              onChanged: (text){
+                setState((){
+                  inputText = text;
+                });
+              },),
+            Image.file(widget.userImage, width: 200, height: 200, ),
+            ElevatedButton(
                 onPressed: (){
+                  _addData();
                   Navigator.pop(context);
                 },
-                icon: Icon(Icons.close)
-            ),
+                child: Text('업로드',))
+
           ],
         )
     );
