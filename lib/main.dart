@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import './style.dart' as themeStyle;
@@ -6,11 +7,18 @@ import 'dart:convert';
 import 'package:flutter/rendering.dart'; // 스크롤 관련 유용 함수
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+
+
 
 void main() {
-  runApp(MaterialApp(
-      theme: themeStyle.theme,
-      home: MyApp()
+  runApp(ChangeNotifierProvider(
+    create: (context) => Store1(),
+    child: MaterialApp(
+        theme: themeStyle.theme,
+        home: MyApp()
+    ),
   ));
 }
 
@@ -40,13 +48,9 @@ class _MyAppState extends State<MyApp> {
     } else {
       //실패시 실행할 코드
       throw Exception('실패함ㅅㄱ');
-
-    //  }
     }
+    print(data);
   }
-
-
-
 
   @override
   void initState() {
@@ -164,7 +168,14 @@ class _HomeUIState extends State<HomeUI> {
             children: [
               img,
               //Image.network(widget.data[i]['image']),
-              Text(widget.data[i]['id'].toString()),
+              GestureDetector(
+                  child: Text(widget.data[i]['user'].toString()),
+                  onTap: (){
+                    Navigator.push(context,
+                    CupertinoPageRoute(builder: (c) => Profile())
+                    );
+                  },
+              ),
               Text(widget.data[i]['likes'].toString()),
               Text(widget.data[i]['date']),
               Text(widget.data[i]['content']),
@@ -208,6 +219,8 @@ class _UploadState extends State<Upload> {
     });
   }
 
+
+
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
@@ -238,10 +251,58 @@ class _UploadState extends State<Upload> {
                   Navigator.pop(context);
                 },
                 child: Text('업로드',))
-
           ],
         )
     );
+  }
+}
 
+class Store1 extends ChangeNotifier {
+  var name = 'john kim';
+  int follow = 0;
+  bool isFollow = false;
+  changeName(newName){
+    name = newName;
+    notifyListeners();
+  }
+  chageFollow(){
+    if(isFollow == false){
+      follow += 1;
+    }else{
+      follow -= 1;
+    }
+    notifyListeners();
+  }
+}
+
+class Profile extends StatefulWidget {
+  const Profile({Key? key}) : super(key: key);
+
+  @override
+  State<Profile> createState() => _ProfileState();
+}
+
+class _ProfileState extends State<Profile> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(context.watch<Store1>().name)),
+      body: Container(
+        margin: EdgeInsets.all(7.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Icon(Icons.person),
+            Text('팔로우 ${context.watch<Store1>().follow}명'),
+            ElevatedButton(
+                onPressed: (){
+                  context.read<Store1>().chageFollow();
+                },
+                child: Text('팔로우'))
+          ],
+        ),
+      ),
+    );
   }
 }
